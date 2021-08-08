@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bekasiberbagi/auth"
 	"bekasiberbagi/response"
 	"bekasiberbagi/user"
 	"net/http"
@@ -10,10 +11,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -36,7 +38,14 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	userFormatter := user.FormatUser(newUser, "test")
+	token, err := h.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		response := response.APIResponseFailed(err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userFormatter := user.FormatUser(newUser, token)
 
 	response := response.APIResponseSuccess("User has been registered", http.StatusOK, userFormatter)
 
@@ -62,7 +71,14 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	formatter := user.FormatUser(loggedUser, "token")
+	token, err := h.authService.GenerateToken(loggedUser.ID)
+	if err != nil {
+		response := response.APIResponseFailed(err.Error(), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := user.FormatUser(loggedUser, token)
 
 	response := response.APIResponseSuccess("Success login", http.StatusOK, formatter)
 
