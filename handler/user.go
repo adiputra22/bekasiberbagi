@@ -4,6 +4,7 @@ import (
 	"bekasiberbagi/auth"
 	"bekasiberbagi/response"
 	"bekasiberbagi/user"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -106,5 +107,40 @@ func (h *userHandler) IsEmailAvailability(c *gin.Context) {
 
 	response := response.APIResponseSuccess("Success. User not found", http.StatusOK, loggedUser)
 
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userId := 1
+
+	path := fmt.Sprintf("uploads/images/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.userService.SaveAvatar(userId, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := response.APIResponseSuccess("Success upload avatar", http.StatusOK, data)
 	c.JSON(http.StatusOK, response)
 }

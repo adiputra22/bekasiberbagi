@@ -45,6 +45,19 @@ func APIResponseFailed(message string, code int) Response {
 	return response
 }
 
+func APIResponseFailedWithData(message string, code int, data interface{}) Response {
+	meta := Meta{}
+	meta.Message = message
+	meta.Code = code
+	meta.Status = STATUS_FAILED
+
+	response := Response{}
+	response.Meta = meta
+	response.Data = data
+
+	return response
+}
+
 func APIResponseValidationFailed(message string, code int, errors error) Response {
 	meta := Meta{}
 	meta.Message = message
