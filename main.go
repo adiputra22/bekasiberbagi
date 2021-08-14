@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"gorm.io/driver/mysql"
@@ -35,6 +36,9 @@ func main() {
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+
+	router.Use(static.Serve("/uploads", static.LocalFile("./uploads", true)))
+
 	api := router.Group("/api/v1")
 
 	api.POST("/users", userHandler.RegisterUser)
