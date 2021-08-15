@@ -32,3 +32,24 @@ func (h *CampaignHandler) GetCampaigns(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *CampaignHandler) GetCampaign(c *gin.Context) {
+	var input campaign.GetCampaignDetailInput
+
+	err := c.ShouldBindUri(&input)
+	if err != nil {
+		response := response.APIResponseFailed("Error uri", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	campaignDetail, err := h.service.GetCampaignById(input)
+	if err != nil {
+		response := response.APIResponseFailed("Error when get detail", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := response.APIResponseSuccess("Campaign detail", http.StatusOK, campaign.FormatCampaignDetail(campaignDetail))
+	c.JSON(http.StatusOK, response)
+}
