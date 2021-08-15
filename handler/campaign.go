@@ -3,6 +3,7 @@ package handler
 import (
 	"bekasiberbagi/campaign"
 	"bekasiberbagi/response"
+	"bekasiberbagi/user"
 	"net/http"
 	"strconv"
 
@@ -51,5 +52,30 @@ func (h *CampaignHandler) GetCampaign(c *gin.Context) {
 	}
 
 	response := response.APIResponseSuccess("Campaign detail", http.StatusOK, campaign.FormatCampaignDetail(campaignDetail))
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
+	var input campaign.CreateCampaignInput
+
+	err := c.ShouldBindJSON(&input)
+
+	if err != nil {
+		response := response.APIResponseValidationFailed("Create campaign failed coz input", http.StatusUnprocessableEntity, err)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	input.User = c.MustGet("currentUser").(user.User)
+
+	campaignCreated, err := h.service.CreateCampaign(input)
+
+	if err != nil {
+		response := response.APIResponseValidationFailed("Create campaign failed coz service", http.StatusUnprocessableEntity, err)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	response := response.APIResponseSuccess("Campaign detail", http.StatusOK, campaign.FormatCampaign(campaignCreated))
 	c.JSON(http.StatusOK, response)
 }
