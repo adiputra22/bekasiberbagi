@@ -1,7 +1,9 @@
 package campaign
 
 import (
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gosimple/slug"
 )
@@ -10,6 +12,7 @@ type Service interface {
 	GetCampaigns(userId int) ([]Campaign, error)
 	GetCampaignById(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	UpdateCampaign(inputUri GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -53,6 +56,8 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 	campaign.Perks = input.Perks
 	campaign.UserID = input.User.ID
 	campaign.BackerCount = 0
+	campaign.CreatedAt = time.Now()
+	campaign.UpdatedAt = time.Now()
 
 	userSlug := fmt.Sprintf("%s %d", input.Name, input.User.ID)
 	campaign.Slug = slug.Make(userSlug)
@@ -64,4 +69,37 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 	}
 
 	return campaign, nil
+}
+
+func (s *service) UpdateCampaign(inputUri GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error) {
+	singleCampaign, err := s.repository.FindById(inputUri.ID)
+
+	if err != nil {
+		return singleCampaign, err
+	}
+
+	if singleCampaign.UserID != input.User.ID {
+		return singleCampaign, errors.New("USER UNAUTHORIZED TO EDIT THIS CAMPAIGN")
+	}
+
+	updatedCampaign := Campaign{}
+	updatedCampaign.ID = inputUri.ID
+	updatedCampaign.Name = input.Name
+	updatedCampaign.ShortDescription = input.ShortDescription
+	updatedCampaign.Description = input.Description
+	updatedCampaign.GoalAmount = input.GoalAmount
+	updatedCampaign.Perks = input.Perks
+	updatedCampaign.UserID = input.User.ID
+	updatedCampaign.BackerCount = 0
+	updatedCampaign.CreatedAt = singleCampaign.CreatedAt
+	updatedCampaign.UpdatedAt = time.Now()
+	updatedCampaign.Slug = singleCampaign.Slug
+
+	resultCampaign, err := s.repository.Update(updatedCampaign)
+
+	if err != nil {
+		return resultCampaign, err
+	}
+
+	return resultCampaign, nil
 }
