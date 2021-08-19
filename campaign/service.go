@@ -13,6 +13,8 @@ type Service interface {
 	GetCampaignById(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(inputUri GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
+
+	CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -102,4 +104,43 @@ func (s *service) UpdateCampaign(inputUri GetCampaignDetailInput, input CreateCa
 	}
 
 	return resultCampaign, nil
+}
+
+func (s *service) CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error) {
+	campaign, err := s.repository.FindById(input.CampaignId)
+
+	if err != nil {
+		return CampaignImage{}, err
+	}
+
+	if campaign.UserID != input.User.ID {
+		return CampaignImage{}, errors.New("USER UNAUTHORIZED TO UPLOAD IMAGE THIS CAMPAIGN")
+	}
+
+	isPrimary := 0
+
+	if *input.IsPrimary {
+		isPrimary = 1
+
+		_, err := s.repository.MarkImageToNonPrimary(input.CampaignId)
+
+		if err != nil {
+			return CampaignImage{}, err
+		}
+	}
+
+	campaignImage := CampaignImage{}
+	campaignImage.CampaignID = input.CampaignId
+	campaignImage.IsPrimary = isPrimary
+	campaignImage.FileName = fileLocation
+	campaignImage.CreatedAt = time.Now()
+	campaignImage.UpdatedAt = time.Now()
+
+	resultCampaignImage, err := s.repository.CreateImage(campaignImage)
+
+	if err != nil {
+		return resultCampaignImage, err
+	}
+
+	return resultCampaignImage, nil
 }

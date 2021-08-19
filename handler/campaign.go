@@ -4,6 +4,7 @@ import (
 	"bekasiberbagi/campaign"
 	"bekasiberbagi/response"
 	"bekasiberbagi/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -112,5 +113,55 @@ func (h *CampaignHandler) UpdateCampaign(c *gin.Context) {
 	}
 
 	response := response.APIResponseSuccess("Update campaign success", http.StatusOK, campaign.FormatCampaign(campaignCreated))
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *CampaignHandler) CreateCampaignImage(c *gin.Context) {
+	file, err := c.FormFile("campaign_image")
+
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	userId := currentUser.ID
+
+	path := fmt.Sprintf("uploads/campaign/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var createCampaignImageInput campaign.CreateCampaignImageInput
+
+	err = c.ShouldBind(&createCampaignImageInput)
+
+	createCampaignImageInput.User = currentUser
+
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.service.CreateCampaignImage(createCampaignImageInput, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := response.APIResponseFailedWithData(err.Error(), http.StatusBadRequest, data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := response.APIResponseSuccess("Success upload campaign image", http.StatusOK, data)
 	c.JSON(http.StatusOK, response)
 }
