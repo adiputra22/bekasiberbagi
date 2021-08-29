@@ -9,17 +9,30 @@ import (
 	"bekasiberbagi/user"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "root:@tcp(127.0.0.1:3306)/bekasiberbagi?charset=utf8mb4&parseTime=True&loc=Local"
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_PORT := os.Getenv("DB_PORT")
+	DB_NAME := os.Getenv("DB_NAME")
+	DB_USER := os.Getenv("DB_USER")
+
+	dsn := DB_USER + ":@tcp(" + DB_HOST + ":" + DB_PORT + ")/" + DB_NAME + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
