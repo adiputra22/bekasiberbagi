@@ -14,6 +14,7 @@ type Service interface {
 	GetUserById(Id int) (User, error)
 	GetAllUsers() ([]User, error)
 	StoreFromForm(form FormCreateInput) (User, error)
+	UpdateFromForm(form FormUpdateInput) (User, error)
 }
 
 type service struct {
@@ -145,4 +146,22 @@ func (s *service) StoreFromForm(form FormCreateInput) (User, error) {
 	}
 
 	return newUser, nil
+}
+
+func (s *service) UpdateFromForm(form FormUpdateInput) (User, error) {
+	user, err := s.repository.FindById(form.ID)
+	if err != nil {
+		return user, err
+	}
+
+	user.Name = form.Name
+	user.Email = form.Email
+	user.Occupation = form.Occupation
+
+	updatedUser, err := s.repository.Update(user)
+	if err != nil {
+		return updatedUser, err
+	}
+
+	return updatedUser, nil
 }

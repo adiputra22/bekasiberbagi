@@ -3,6 +3,7 @@ package handler
 import (
 	"bekasiberbagi/user"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,6 +43,55 @@ func (h *userHandler) Store(c *gin.Context) {
 
 	_, err = h.userService.StoreFromForm(form)
 
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/web/users")
+}
+
+func (h *userHandler) Edit(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	registeredUser, err := h.userService.GetUserById(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	input := user.FormUpdateInput{}
+	input.ID = registeredUser.ID
+	input.Name = registeredUser.Name
+	input.Email = registeredUser.Email
+	input.Occupation = registeredUser.Occupation
+	input.Error = nil
+
+	c.HTML(http.StatusOK, "edit.html", input)
+}
+
+func (h *userHandler) Update(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	userExists, err := h.userService.GetUserById(idParam)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	var form user.FormUpdateInput
+
+	err = c.ShouldBind(&form)
+	if err != nil {
+		form.Error = err
+		c.HTML(http.StatusInternalServerError, "edit.html", userExists)
+		return
+	}
+
+	form.ID = idParam
+
+	_, err = h.userService.UpdateFromForm(form)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", nil)
 		return

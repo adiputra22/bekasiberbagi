@@ -94,6 +94,8 @@ func main() {
 	web.GET("/users", userWebHandler.Index)
 	web.GET("/users/create", userWebHandler.Create)
 	web.POST("/users", userWebHandler.Store)
+	web.GET("/users/:id/edit", userWebHandler.Edit)
+	web.POST("/users/:id", userWebHandler.Update)
 
 	router.Run()
 }
