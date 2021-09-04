@@ -13,6 +13,7 @@ type Service interface {
 	SaveAvatar(Id int, fileLocation string) (User, error)
 	GetUserById(Id int) (User, error)
 	GetAllUsers() ([]User, error)
+	StoreFromForm(form FormCreateInput) (User, error)
 }
 
 type service struct {
@@ -120,4 +121,28 @@ func (s *service) GetAllUsers() ([]User, error) {
 	}
 
 	return users, nil
+}
+
+func (s *service) StoreFromForm(form FormCreateInput) (User, error) {
+	user := User{}
+	user.Name = form.Name
+	user.Email = form.Email
+	user.Occupation = form.Occupation
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.MinCost)
+
+	if err != nil {
+		return user, err
+	}
+
+	user.PasswordHash = string(passwordHash)
+	user.Role = "user"
+
+	newUser, err := s.repository.Save(user)
+
+	if err != nil {
+		return newUser, err
+	}
+
+	return newUser, nil
 }

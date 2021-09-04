@@ -92,6 +92,8 @@ func main() {
 
 	web := router.Group("/web")
 	web.GET("/users", userWebHandler.Index)
+	web.GET("/users/create", userWebHandler.Create)
+	web.POST("/users", userWebHandler.Store)
 
 	router.Run()
 }
