@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bekasiberbagi/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -92,6 +93,64 @@ func (h *userHandler) Update(c *gin.Context) {
 	form.ID = idParam
 
 	_, err = h.userService.UpdateFromForm(form)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/web/users")
+}
+
+func (h *userHandler) EditAvatar(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	registeredUser, err := h.userService.GetUserById(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	input := user.FormUpdateAvatar{}
+	input.ID = registeredUser.ID
+	input.Name = registeredUser.Name
+	input.AvatarFileName = registeredUser.AvatarFileName
+	input.Error = nil
+
+	c.HTML(http.StatusOK, "edit_avatar.html", input)
+}
+
+func (h *userHandler) UpdateAvatar(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	userExists, err := h.userService.GetUserById(idParam)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	path := fmt.Sprintf("uploads/images/%d-%s", idParam, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	var form user.FormUpdateAvatar
+
+	form.ID = idParam
+	form.AvatarFileName = path
+	form.Name = userExists.Name
+
+	_, err = h.userService.UpdateAvatarFromForm(form)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", nil)
 		return

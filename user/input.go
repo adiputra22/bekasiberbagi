@@ -31,3 +31,10 @@ type FormUpdateInput struct {
 	Occupation string `form:"occupation" binding:"required"`
 	Error      error
 }
+
+type FormUpdateAvatar struct {
+	ID             int
+	Name           string `form:"name" binding:"required"`
+	AvatarFileName string `form:"avatar"`
+	Error          error
+}
