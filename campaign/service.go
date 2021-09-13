@@ -15,6 +15,8 @@ type Service interface {
 	UpdateCampaign(inputUri GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
 
 	CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
+	GetAllCampaigns() ([]Campaign, error)
+	CreateFromForm(form FormCreateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -143,4 +145,38 @@ func (s *service) CreateCampaignImage(input CreateCampaignImageInput, fileLocati
 	}
 
 	return resultCampaignImage, nil
+}
+
+func (s *service) GetAllCampaigns() ([]Campaign, error) {
+	campaigns, err := s.repository.FindAllWithImages()
+
+	if err != nil {
+		return campaigns, err
+	}
+
+	return campaigns, nil
+}
+
+func (s *service) CreateFromForm(form FormCreateCampaignInput) (Campaign, error) {
+	campaign := Campaign{}
+	campaign.Name = form.Name
+	campaign.ShortDescription = form.ShortDescription
+	campaign.Description = form.Description
+	campaign.GoalAmount = form.GoalAmount
+	campaign.Perks = form.Perks
+	campaign.UserID = form.UserID
+	campaign.BackerCount = 0
+	campaign.CreatedAt = time.Now()
+	campaign.UpdatedAt = time.Now()
+
+	userSlug := fmt.Sprintf("%s %d", form.Name, form.UserID)
+	campaign.Slug = slug.Make(userSlug)
+
+	campaign, err := s.repository.Save(campaign)
+
+	if err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
 }

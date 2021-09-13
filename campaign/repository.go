@@ -10,6 +10,7 @@ type Repository interface {
 	Update(campaign Campaign) (Campaign, error)
 	CreateImage(campaignImage CampaignImage) (CampaignImage, error)
 	MarkImageToNonPrimary(campaignId int) (bool, error)
+	FindAllWithImages() ([]Campaign, error)
 }
 
 type repository struct {
@@ -24,6 +25,18 @@ func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
 
 	err := r.db.Find(&campaigns).Error
+
+	if err != nil {
+		return campaigns, err
+	}
+
+	return campaigns, nil
+}
+
+func (r *repository) FindAllWithImages() ([]Campaign, error) {
+	var campaigns []Campaign
+
+	err := r.db.Find(&campaigns).Preload("CampaignImages", "campaign_images.is_primary = 1").Error
 
 	if err != nil {
 		return campaigns, err
