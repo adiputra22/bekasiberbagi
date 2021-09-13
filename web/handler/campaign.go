@@ -3,7 +3,9 @@ package handler
 import (
 	"bekasiberbagi/campaign"
 	"bekasiberbagi/user"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,6 +57,72 @@ func (h *campaignHandler) Store(c *gin.Context) {
 	}
 
 	_, err = h.campaignService.CreateFromForm(form)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/web/campaigns")
+}
+
+func (h *campaignHandler) FormUploadImage(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	campaignRegistered, err := h.campaignService.GetCampaignByIntId(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	var input campaign.FormUpdateImage
+	input.ID = campaignRegistered.ID
+	input.Name = campaignRegistered.Name
+	input.Image = ""
+	input.Error = nil
+
+	c.HTML(http.StatusOK, "campaign_image.html", input)
+}
+
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	var form campaign.FormUpdateImage
+
+	err := c.ShouldBind(&form)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	file, err := c.FormFile("campaign_image")
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	campaignRegistered, err := h.campaignService.GetCampaignByIntId(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	form.ID = idParam
+
+	userId := campaignRegistered.UserID
+
+	path := fmt.Sprintf("uploads/campaign/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	_, err = h.campaignService.UploadImageFromForm(form, path)
 
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", nil)

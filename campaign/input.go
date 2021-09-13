@@ -31,3 +31,10 @@ type FormCreateCampaignInput struct {
 	Error            error
 	Users            []user.User
 }
+
+type FormUpdateImage struct {
+	ID    int
+	Name  string `form:"name" binding:"required"`
+	Image string `file:"campaign_image"`
+	Error error
+}

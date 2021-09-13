@@ -1,0 +1,30 @@
+{{ define "content" }}
+    <h2 class="mb-4">Edit Campaign Image</h2>
+
+    {{ if .Error }}
+    <div class="alert alert-danger">
+        {{ .Error }}
+    </div>
+    {{ end }}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/web/campaigns/{{ .ID }}/image" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input readonly="readonly" type="text" name="name" placeholder="enter name" class="form-control" value="{{ .Name }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Image</label>
+                    <input type="file" name="campaign_image" placeholder="enter avatar" class="form-control">
+                    <img class="img-fluid img-thumbnail" src="/{{ .Image }}" width="200" />
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{{ end }}

@@ -17,6 +17,9 @@ type Service interface {
 	CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 	GetAllCampaigns() ([]Campaign, error)
 	CreateFromForm(form FormCreateCampaignInput) (Campaign, error)
+
+	GetCampaignByIntId(id int) (Campaign, error)
+	UploadImageFromForm(input FormUpdateImage, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -43,6 +46,16 @@ func (s *service) GetCampaigns(userId int) ([]Campaign, error) {
 
 func (s *service) GetCampaignById(input GetCampaignDetailInput) (Campaign, error) {
 	campaign, err := s.repository.FindById(input.ID)
+
+	if err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
+}
+
+func (s *service) GetCampaignByIntId(id int) (Campaign, error) {
+	campaign, err := s.repository.FindById(id)
 
 	if err != nil {
 		return campaign, err
@@ -133,6 +146,41 @@ func (s *service) CreateCampaignImage(input CreateCampaignImageInput, fileLocati
 
 	campaignImage := CampaignImage{}
 	campaignImage.CampaignID = input.CampaignId
+	campaignImage.IsPrimary = isPrimary
+	campaignImage.FileName = fileLocation
+	campaignImage.CreatedAt = time.Now()
+	campaignImage.UpdatedAt = time.Now()
+
+	resultCampaignImage, err := s.repository.CreateImage(campaignImage)
+
+	if err != nil {
+		return resultCampaignImage, err
+	}
+
+	return resultCampaignImage, nil
+}
+
+func (s *service) UploadImageFromForm(input FormUpdateImage, fileLocation string) (CampaignImage, error) {
+	campaign, err := s.repository.FindById(input.ID)
+
+	if err != nil {
+		return CampaignImage{}, err
+	}
+
+	if campaign.ID == 0 {
+		return CampaignImage{}, errors.New("EMPTY CAMPAIGN")
+	}
+
+	isPrimary := 1
+
+	_, err = s.repository.MarkImageToNonPrimary(campaign.ID)
+
+	if err != nil {
+		return CampaignImage{}, err
+	}
+
+	campaignImage := CampaignImage{}
+	campaignImage.CampaignID = campaign.ID
 	campaignImage.IsPrimary = isPrimary
 	campaignImage.FileName = fileLocation
 	campaignImage.CreatedAt = time.Now()
