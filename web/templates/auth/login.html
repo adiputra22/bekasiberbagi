@@ -1,0 +1,29 @@
+{{ define "content" }}
+    <h2 class="mb-4">Login</h2>
+
+    {{ if .Error }}
+    <div class="alert alert-danger">
+        {{ .Error }}
+    </div>
+    {{ end }}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="/web/login" method="POST">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="text" name="email" placeholder="enter email" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" placeholder="enter password" class="form-control">
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{{ end }}

@@ -9,6 +9,7 @@ import (
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	Login(input LoginInput) (User, error)
+	WebLogin(input WebLoginInput) (User, error)
 	IsEmailAvailability(input CheckEmailAvailabilityInput) (bool, error)
 	SaveAvatar(Id int, fileLocation string) (User, error)
 	GetUserById(Id int) (User, error)
@@ -183,4 +184,27 @@ func (s *service) UpdateAvatarFromForm(form FormUpdateAvatar) (User, error) {
 	}
 
 	return updatedUser, nil
+}
+
+func (s *service) WebLogin(input WebLoginInput) (User, error) {
+	email := input.Email
+	password := input.Password
+
+	user, err := s.repository.FindByEmail(email)
+
+	if err != nil {
+		return user, err
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("User not found")
+	}
+
+	errPassword := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+
+	if errPassword != nil {
+		return user, errPassword
+	}
+
+	return user, nil
 }

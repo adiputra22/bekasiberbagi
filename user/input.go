@@ -38,3 +38,8 @@ type FormUpdateAvatar struct {
 	AvatarFileName string `form:"avatar"`
 	Error          error
 }
+
+type WebLoginInput struct {
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required"`
+}
