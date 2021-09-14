@@ -190,3 +190,16 @@ func (h *campaignHandler) UploadImage(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, "/web/campaigns")
 }
+
+func (h *campaignHandler) Show(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	campaignRegistered, err := h.campaignService.GetCampaignByIntId(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	c.HTML(http.StatusOK, "campaign_show.html", campaignRegistered)
+}

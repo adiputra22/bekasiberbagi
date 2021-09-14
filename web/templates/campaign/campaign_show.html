@@ -1,0 +1,48 @@
+{{ define "content" }}
+    <h2 class="mb-4">Show Campaign</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="#">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" disabled placeholder="enter name" class="form-control" value="{{ .Name }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="short_description">Short Description</label>
+                    <input type="text" name="short_description" disabled placeholder="enter short description" class="form-control" value="{{ .ShortDescription }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" disabled placeholder="enter description" class="form-control">{{ .Description }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="goal_amount">Goal Amount</label>
+                    <input type="text" name="goal_amount" disabled placeholder="enter goal amount" class="form-control" value="{{ .GoalAmountFormatIDR }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="perks">Perks</label>
+                    <input type="text" name="perks" disabled placeholder="enter perks (comma as saparator)" class="form-control" value="{{ .Perks }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="perks">Backer Count</label>
+                    <input type="text" name="backer_count" disabled class="form-control" value="{{ .BackerCount }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="perks">Current Amount</label>
+                    <input type="text" name="current_amount" disabled class="form-control" value="{{ .CurrentAmountFormatIDR }}">
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{{ end }}

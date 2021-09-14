@@ -103,6 +103,7 @@ func main() {
 	web.GET("/campaigns", campaignWebHandler.Index)
 	web.GET("/campaigns/create", campaignWebHandler.Create)
 	web.POST("/campaigns", campaignWebHandler.Store)
+	web.GET("/campaigns/:id", campaignWebHandler.Show)
 	web.GET("/campaigns/:id/edit", campaignWebHandler.Edit)
 	web.POST("/campaigns/:id", campaignWebHandler.Update)
 	web.GET("/campaigns/:id/image", campaignWebHandler.FormUploadImage)
