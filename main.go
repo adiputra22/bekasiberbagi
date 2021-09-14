@@ -120,6 +120,7 @@ func main() {
 
 	web.GET("/login", webAuthHandler.LoginForm)
 	web.POST("/login", webAuthHandler.LoginAction)
+	web.GET("/logout", webAuthHandler.Logout)
 
 	router.Run()
 }

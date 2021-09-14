@@ -44,3 +44,11 @@ func (h *webAuthHandler) LoginAction(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, "/web/users")
 }
+
+func (h *webAuthHandler) Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+
+	c.Redirect(http.StatusFound, "/web/login")
+}
