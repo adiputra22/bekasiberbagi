@@ -61,6 +61,7 @@ func main() {
 
 	userWebHandler := webHandler.NewUserHandler(userService)
 	campaignWebHandler := webHandler.NewCampaignHandler(campaignService, userService)
+	transactionWebHandler := webHandler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Use(cors.Default())
@@ -108,6 +109,8 @@ func main() {
 	web.POST("/campaigns/:id", campaignWebHandler.Update)
 	web.GET("/campaigns/:id/image", campaignWebHandler.FormUploadImage)
 	web.POST("/campaigns/:id/image", campaignWebHandler.UploadImage)
+
+	web.GET("/transactions", transactionWebHandler.Index)
 
 	router.Run()
 }

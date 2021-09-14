@@ -12,6 +12,7 @@ type Repository interface {
 	SaveTransaction(transaction Transaction) (Transaction, error)
 	Update(transaction Transaction) (Transaction, error)
 	GetById(transactionId int) (Transaction, error)
+	GetAll() ([]Transaction, error)
 }
 
 func NewRepository(db *gorm.DB) *repository {
@@ -72,4 +73,16 @@ func (r *repository) GetById(transactionId int) (Transaction, error) {
 	}
 
 	return transaction, nil
+}
+
+func (r *repository) GetAll() ([]Transaction, error) {
+	var transactions []Transaction
+
+	err := r.db.Preload("User").Preload("Campaign.CampaignImages", "campaign_images.is_primary = 1").Order("id desc").Find(&transactions).Error
+
+	if err != nil {
+		return transactions, err
+	}
+
+	return transactions, nil
 }
