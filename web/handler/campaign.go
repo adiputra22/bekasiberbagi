@@ -79,7 +79,14 @@ func (h *campaignHandler) FormUploadImage(c *gin.Context) {
 	var input campaign.FormUpdateImage
 	input.ID = campaignRegistered.ID
 	input.Name = campaignRegistered.Name
-	input.Image = ""
+
+	primaryImage := ""
+
+	if len(campaignRegistered.CampaignImages) > 0 {
+		primaryImage = campaignRegistered.CampaignImages[0].FileName
+	}
+
+	input.Image = primaryImage
 	input.Error = nil
 
 	c.HTML(http.StatusOK, "campaign_image.html", input)
