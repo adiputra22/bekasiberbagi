@@ -66,6 +66,58 @@ func (h *campaignHandler) Store(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/web/campaigns")
 }
 
+func (h *campaignHandler) Edit(c *gin.Context) {
+	idParam, _ := strconv.Atoi(c.Param("id"))
+
+	campaignRegistered, err := h.campaignService.GetCampaignByIntId(idParam)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	var input campaign.FormCreateCampaignInput
+	input.ID = campaignRegistered.ID
+	input.Name = campaignRegistered.Name
+	input.ShortDescription = campaignRegistered.ShortDescription
+	input.Description = campaignRegistered.Description
+	input.GoalAmount = campaignRegistered.GoalAmount
+	input.Perks = campaignRegistered.Perks
+	input.UserID = campaignRegistered.UserID
+	input.Error = nil
+
+	users, err := h.userService.GetAllUsers()
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+	input.Users = users
+
+	c.HTML(http.StatusOK, "campaign_edit.html", input)
+}
+
+func (h *campaignHandler) Update(c *gin.Context) {
+	var form campaign.FormCreateCampaignInput
+
+	err := c.ShouldBind(&form)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	idParam, _ := strconv.Atoi(c.Param("id"))
+	form.ID = idParam
+
+	_, err = h.campaignService.UpdateFromForm(form)
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", nil)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/web/campaigns")
+}
+
 func (h *campaignHandler) FormUploadImage(c *gin.Context) {
 	idParam, _ := strconv.Atoi(c.Param("id"))
 

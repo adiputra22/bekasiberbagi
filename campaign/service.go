@@ -17,6 +17,7 @@ type Service interface {
 	CreateCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 	GetAllCampaigns() ([]Campaign, error)
 	CreateFromForm(form FormCreateCampaignInput) (Campaign, error)
+	UpdateFromForm(form FormCreateCampaignInput) (Campaign, error)
 
 	GetCampaignByIntId(id int) (Campaign, error)
 	UploadImageFromForm(input FormUpdateImage, fileLocation string) (CampaignImage, error)
@@ -227,4 +228,32 @@ func (s *service) CreateFromForm(form FormCreateCampaignInput) (Campaign, error)
 	}
 
 	return campaign, nil
+}
+
+func (s *service) UpdateFromForm(form FormCreateCampaignInput) (Campaign, error) {
+	campaign, err := s.repository.FindById(form.ID)
+
+	if err != nil || campaign.ID == 0 {
+		return campaign, err
+	}
+
+	campaign.ID = form.ID
+	campaign.Name = form.Name
+	campaign.ShortDescription = form.ShortDescription
+	campaign.Description = form.Description
+	campaign.GoalAmount = form.GoalAmount
+	campaign.Perks = form.Perks
+	campaign.UserID = form.UserID
+	campaign.UpdatedAt = time.Now()
+
+	userSlug := fmt.Sprintf("%s %d", form.Name, form.UserID)
+	campaign.Slug = slug.Make(userSlug)
+
+	updatedCampaign, err := s.repository.Update(campaign)
+
+	if err != nil {
+		return updatedCampaign, err
+	}
+
+	return updatedCampaign, nil
 }
